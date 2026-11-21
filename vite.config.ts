@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import fs from 'node:fs'
 import path from 'node:path'
-import { handleAssistantRequest } from './src/server/assistant.ts'
+import { handleAssistantRequest } from './api/assistant.ts'
 
 import siteConfiguration from './.figma/make/site.json'
 
