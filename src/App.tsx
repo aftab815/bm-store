@@ -1415,9 +1415,14 @@ function ChatAssistant({ onClose }: { onClose: () => void }) {
     setMessage(""); setBusy(true); setError("");
     try {
       const response = await fetch("/api/assistant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: [...messages, { role: "user", content: question }] }) });
-      const data = await response.json();
+      if (!response.headers.get("content-type")?.includes("application/json")) {
+        throw new Error("The assistant service is not available right now. Please try again shortly.");
+      }
+      const data = await response.json() as { reply?: string; error?: string };
       if (!response.ok) throw new Error(data.error || "Assistant is temporarily unavailable.");
-      setMessages((current) => [...current, { role: "assistant", text: data.reply }]);
+      const reply = data.reply;
+      if (typeof reply !== "string") throw new Error("The assistant returned an invalid response. Please try again.");
+      setMessages((current) => [...current, { role: "assistant", text: reply }]);
     } catch (err) { setError(err instanceof Error ? err.message : "Assistant is temporarily unavailable."); }
     finally { setBusy(false); }
   }
