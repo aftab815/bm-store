@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { handleAssistantRequest } from "../src/server/assistant.ts";
+import { handleAssistantRequest } from "../src/server/assistant";
 
 type VercelRequest = IncomingMessage & {
   body?: unknown;
