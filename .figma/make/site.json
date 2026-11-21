@@ -1,0 +1,10 @@
+{
+  "description": "Shop premium winter jackets and luxury outerwear for men and women, with curated collections, product reviews, and a streamlined shopping experience.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
