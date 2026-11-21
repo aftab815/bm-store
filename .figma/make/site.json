@@ -1,5 +1,12 @@
 {
+  "title": "BM Solicitor | Luxury Fashion Store",
   "description": "Shop premium winter jackets and luxury outerwear for men and women, with curated collections, product reviews, and a streamlined shopping experience.",
+  "icons": {
+    "icon": "/favicon.png?v=3"
+  },
+  "openGraph": {
+    "image": "https://bm-store-eight.vercel.app/assets/images/bm-solicitor-logo.png"
+  },
   "robots": {
     "index": false
   },

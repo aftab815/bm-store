@@ -310,8 +310,8 @@ img {
 .account-action:hover { border-color: #b5a37f; background: #fcfbf8; }
 .floating-support { position: fixed; z-index: 110; right: 22px; bottom: 22px; display: flex; flex-direction: row; align-items: center; gap: 12px; }
 .floating-support > button { width: 54px; height: 54px; border-radius: 50%; border: 0; display: grid; place-items: center; box-shadow: 0 5px 22px #0003; }
-.floating-whatsapp { background: #fff; color: #25d366; cursor: default; }
-.floating-whatsapp svg { width: 32px; height: 32px; fill: currentColor; }
+.floating-whatsapp { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 50%; background: transparent; color: #fff; cursor: pointer; }
+.floating-whatsapp svg { width: 54px; height: 54px; fill: currentColor; }
 .floating-assistant { background: #fff; padding: 8px; cursor: pointer; }
 .floating-assistant img { width: 100%; height: 100%; object-fit: contain; filter: brightness(0) saturate(100%); }
 .assistant-window { position: fixed; z-index: 120; right: 0; bottom: 78px; width: min(370px, calc(100vw - 24px)); height: min(620px, 72vh); min-height: 390px; overflow: hidden; border: 1px solid #ded8cd; border-radius: 16px; background: #fff; box-shadow: 0 14px 50px #0003; display: flex; flex-direction: column; }

@@ -2003,7 +2003,22 @@ export default function App() {
       {sidePanel && <div className="drawer-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setSidePanel(null); }}><aside className="side-drawer" role="dialog" aria-modal="true" aria-label={panelTitles[sidePanel] || "Store panel"}><div className="side-drawer-heading"><span>{panelTitles[sidePanel] || "Store"}</span><button onClick={() => setSidePanel(null)} aria-label="Close panel"><Icon name="close" /></button></div><div className="side-drawer-body">{panelContent}</div></aside></div>}
       <div className="floating-support">
         {assistantOpen && <ChatAssistant onClose={() => setAssistantOpen(false)} />}
-        <a className="floating-whatsapp" href="https://wa.me/923247800007" target="_blank" rel="noopener noreferrer" title="Chat with us on WhatsApp" aria-label="Chat with us on WhatsApp"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3.2A12.7 12.7 0 0 0 5.1 22.4L3.4 28.7l6.5-1.7A12.7 12.7 0 1 0 16 3.2Zm0 22.9c-2 0-3.9-.5-5.6-1.5l-.4-.2-3.8 1 1-3.7-.3-.4a10.3 10.3 0 1 1 9.1 4.8Zm5.7-7.7c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1a8.4 8.4 0 0 1-2.5-1.5 9.3 9.3 0 0 1-1.7-2.1c-.2-.3 0-.5.1-.7l.5-.6.3-.5c.1-.2 0-.4 0-.6l-1-2.3c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4s-1.2 1.2-1.2 2.8 1.2 3.2 1.4 3.4c.2.2 2.4 3.7 5.9 5.1.8.3 1.4.5 1.9.6.8.2 1.6.2 2.2.1.7-.1 1.9-.8 2.2-1.6.3-.8.3-1.5.2-1.6-.1-.2-.3-.3-.6-.4Z"/></svg></a>
+        <a
+          className="floating-whatsapp"
+          href="https://wa.me/923247800007"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Chat with us on WhatsApp"
+          aria-label="Chat with us on WhatsApp"
+        >
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="16" cy="16" r="15" fill="#25d366" />
+            <path
+              fill="currentColor"
+              d="M16 3.2A12.7 12.7 0 0 0 5.1 22.4L3.4 28.7l6.5-1.7A12.7 12.7 0 1 0 16 3.2Zm0 22.9c-2 0-3.9-.5-5.6-1.5l-.4-.2-3.8 1 1-3.7-.3-.4a10.3 10.3 0 1 1 9.1 4.8Zm5.7-7.7c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1a8.4 8.4 0 0 1-2.5-1.5 9.3 9.3 0 0 1-1.7-2.1c-.2-.3 0-.5.1-.7l.5-.6.3-.5c.1-.2 0-.4 0-.6l-1-2.3c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4s-1.2 1.2-1.2 2.8 1.2 3.2 1.4 3.4c.2.2 2.4 3.7 5.9 5.1.8.3 1.4.5 1.9.6.8.2 1.6.2 2.2.1.7-.1 1.9-.8 2.2-1.6.3-.8.3-1.5.2-1.6-.1-.2-.3-.3-.6-.4Z"
+            />
+          </svg>
+        </a>
         <button className="floating-assistant" onClick={() => setAssistantOpen((open) => !open)} aria-label={assistantOpen ? "Close BM Solicitors Assistant" : "Open BM Solicitors Assistant"}><img src="/assets/images/bm-solicitor-logo.png" alt="" /></button>
       </div>
       {toast && (
