@@ -54,20 +54,48 @@ react(),
 
 /** Keeps the local assistant endpoint compatible with the Vercel API handler. */
 function assistantApiPlugin(env: Record<string, string>): Plugin {
+  async function handleRequest(
+    req: import('node:http').IncomingMessage,
+    res: import('node:http').ServerResponse,
+  ) {
+    const method = req.method || 'GET'
+    let raw = ''
+    if (method !== 'GET' && method !== 'HEAD') {
+      for await (const chunk of req) {
+        raw += chunk.toString()
+        if (Buffer.byteLength(raw) > 24_000) {
+          res.statusCode = 413
+          res.setHeader('Content-Type', 'application/json; charset=utf-8')
+          res.setHeader('Cache-Control', 'no-store')
+          res.end(JSON.stringify({ error: 'Message is too long.' }))
+          return
+        }
+      }
+    }
+
+    const request = new Request('http://localhost/api/assistant', {
+      method,
+      body: method === 'GET' || method === 'HEAD' ? undefined : raw,
+    })
+    const response = await handleAssistantRequest(request, env)
+    res.statusCode = response.status
+    response.headers.forEach((value, name) => res.setHeader(name, value))
+    res.end(await response.text())
+  }
+
+  function middleware(
+    req: import('node:http').IncomingMessage,
+    res: import('node:http').ServerResponse,
+    next: (error?: Error) => void,
+  ) {
+    if (req.url?.split('?')[0] !== '/api/assistant') return next()
+    void handleRequest(req, res).catch(next)
+  }
+
   return {
     name: 'bm-assistant-api',
-    configureServer(server) {
-      server.middlewares.use((req, res, next) => {
-        if (req.url?.split('?')[0] !== '/api/assistant') return next()
-        void handleAssistantRequest(req, res, env).catch(next)
-      })
-    },
-    configurePreviewServer(server) {
-      server.middlewares.use((req, res, next) => {
-        if (req.url?.split('?')[0] !== '/api/assistant') return next()
-        void handleAssistantRequest(req, res, env).catch(next)
-      })
-    },
+    configureServer(server) { server.middlewares.use(middleware) },
+    configurePreviewServer(server) { server.middlewares.use(middleware) },
   }
 }
 
