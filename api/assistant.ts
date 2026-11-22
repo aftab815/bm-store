@@ -18,6 +18,37 @@ function isChatMessage(value: unknown): value is ChatMessage {
     return false;
   }
 
+  function fallbackReply(question: string): string {
+    const text = question.toLowerCase();
+
+    if (/^(hi|hello|hey|assalam|salam)\b/.test(text)) {
+      return "Hello! I’m the BM Solicitor store assistant. I can help with jackets, coats, sizing, shipping, returns, or order questions.";
+    }
+    if (text.includes("size") || text.includes("fit") || text.includes("measurement")) {
+      return "Our size guide is available in the store menu. Please share the size guide measurements or your chest/chest, waist, and desired fit, and I can help point you to the closest option.";
+    }
+    if (text.includes("deliver") || text.includes("shipping") || text.includes("ship") || text.includes("country")) {
+      return "The store offers worldwide delivery. Exact delivery time and shipping cost depend on your destination and are confirmed during checkout.";
+    }
+    if (text.includes("return") || text.includes("exchange") || text.includes("refund")) {
+      return "The store lists its returns and exchanges policy under Client Services. Please use the Returns & Exchanges page for the current terms.";
+    }
+    if (text.includes("order") || text.includes("track") || text.includes("tracking")) {
+      return "Please use the Order Tracking page and enter the order details available in your confirmation. I cannot access or update orders directly.";
+    }
+    if (text.includes("payment") || text.includes("pay") || text.includes("cod")) {
+      return "Available payment options are shown during checkout. I cannot confirm or process a payment through this assistant.";
+    }
+    if (text.includes("jacket") || text.includes("coat") || text.includes("product") || text.includes("collection")) {
+      return "You can browse men’s jackets, women’s jackets, coats, new arrivals, and the full collection from the main menu.";
+    }
+    if (text.includes("contact") || text.includes("email") || text.includes("whatsapp")) {
+      return "You can contact the store at info@bmsolicitor.co or use the WhatsApp button on the website.";
+    }
+
+    return "I’m not able to confirm that detail reliably from the store information available here. Please contact the store at info@bmsolicitor.co for an accurate answer.";
+  }
+
   const message = value as { role: unknown; content: unknown };
   return (
     (message.role === "user" || message.role === "assistant") &&
@@ -74,7 +105,7 @@ export async function handleAssistantRequest(
         }),
       );
       const result = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
         {
           method: "POST",
           headers: {
@@ -139,21 +170,14 @@ export async function handleAssistantRequest(
   }
 
   const response = sendJson(
-    503,
-    {
-      error:
-        env.GEMINI_API_KEY || env.GROQ_API_KEY
-          ? "The assistant is temporarily unavailable. Please try again shortly."
-          : "Assistant setup is incomplete. Add GEMINI_API_KEY and GROQ_API_KEY to the server environment.",
-    },
+    200,
+    { reply: fallbackReply(latest), provider: "store-fallback" },
     headers,
   );
   if (providerError) console.warn(`[assistant] Providers unavailable: ${providerError}`);
   return response;
 }
 
-export default {
-  fetch(request: Request) {
-    return handleAssistantRequest(request, process.env);
-  },
-};
+export default async function assistant(request: Request): Promise<Response> {
+  return handleAssistantRequest(request, process.env);
+}
