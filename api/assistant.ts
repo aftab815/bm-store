@@ -117,7 +117,7 @@ export async function handleAssistantRequest(
             contents,
             generationConfig: { temperature: 0.35, maxOutputTokens: 500 },
           }),
-          signal: AbortSignal.timeout(18_000),
+          signal: AbortSignal.timeout(7_000),
         },
       );
       const data = (await result.json()) as {
@@ -152,7 +152,7 @@ export async function handleAssistantRequest(
           max_completion_tokens: 500,
           messages: [{ role: "system", content: systemPrompt }, ...messages],
         }),
-        signal: AbortSignal.timeout(18_000),
+        signal: AbortSignal.timeout(7_000),
       });
       const data = (await result.json()) as {
         choices?: { message?: { content?: string } }[];
