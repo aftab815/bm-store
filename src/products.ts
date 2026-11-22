@@ -5,6 +5,8 @@ export type ProductImage = {
 
 export type Product = {
   id: number;
+  supabaseId?: string;
+  variantOptions?: { id: string; size: string; color: string }[];
   sku: string;
   name: string;
   slug: string;

@@ -1,0 +1,62 @@
+:root { font-family: Inter, Arial, sans-serif; color: #181714; background: #f4f2ed; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+button,input,select,textarea { font: inherit; }
+button { cursor: pointer; }
+.admin-shell { min-height: 100vh; display: grid; grid-template-columns: 230px 1fr; }
+.sidebar { background:#171714; color:#fff; padding:24px 16px; display:flex; flex-direction:column; }
+.brand { letter-spacing:.18em; font-size:18px; font-weight:700; }
+.brand span { display:block; font-size:9px; letter-spacing:.42em; margin-top:4px; }
+.sidebar nav { display:grid; gap:4px; margin-top:36px; }
+.sidebar nav button,.logout { border:0; background:transparent; color:#bdb9ae; text-align:left; padding:11px 12px; border-radius:5px; }
+.sidebar nav button.active,.sidebar nav button:hover { background:#302e29; color:#fff; }
+.logout { margin-top:auto; color:#fff; }
+.admin-main { min-width:0; }
+.admin-header { height:105px; background:#fff; border-bottom:1px solid #e5e1d8; padding:24px 34px; display:flex; align-items:center; }
+.admin-header small,.login-card small { color:#8b846f; letter-spacing:.18em; }
+.admin-header h1 { margin:5px 0 0; font-size:30px; }
+.admin-content { padding:28px 34px 50px; }
+.stats-grid { display:grid; grid-template-columns:repeat(3,minmax(150px,1fr)); gap:14px; margin-bottom:18px; }
+.stats-grid article,.panel { background:#fff; border:1px solid #e5e1d8; border-radius:8px; }
+.stats-grid article { padding:20px; display:grid; gap:8px; }
+.stats-grid article span { color:#777268; font-size:13px; }
+.stats-grid article strong { font-size:28px; }
+.panel { padding:20px; margin-bottom:18px; overflow:hidden; }
+.panel h2 { margin:0 0 16px; font-size:17px; }
+.table-wrap { overflow:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th,td { text-align:left; border-bottom:1px solid #eeeae2; padding:11px 8px; white-space:nowrap; }
+th { color:#777268; font-size:11px; text-transform:uppercase; letter-spacing:.08em; }
+.empty-state { border:1px dashed #d6d1c5; color:#777268; padding:30px; text-align:center; }
+.login-page { min-height:100vh; display:grid; place-items:center; background:#171714; }
+.login-card { width:min(400px,calc(100vw - 32px)); background:#fff; padding:38px; display:grid; gap:14px; }
+.login-card .brand { margin-bottom:18px; }
+.login-card h1 { margin:0 0 8px; }
+.login-card label,.admin-form label { display:grid; gap:7px; font-size:12px; font-weight:700; }
+.login-card input,.admin-form input,.admin-form select,.admin-form textarea,.filters input,.filters select,.inventory-row input { border:1px solid #ddd7ca; border-radius:4px; padding:11px; background:#fff; }
+.login-card button,.admin-form button,.access-denied button,.panel button,.profile button { border:0; border-radius:4px; background:#181714; color:#fff; padding:11px 14px; }
+.error,.notice { color:#9d2f2f; }
+.admin-loading,.access-denied { min-height:100vh; display:grid; place-content:center; text-align:center; }
+.manager-grid { display:grid; grid-template-columns:minmax(280px,.7fr) minmax(420px,1.3fr); gap:18px; align-items:start; }
+.admin-form { display:grid; gap:12px; }
+.admin-form textarea { min-height:70px; resize:vertical; }
+.admin-form .check { display:flex; align-items:center; gap:8px; }
+.admin-form .code-field { font-family:Consolas,monospace; }
+.panel-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+.filters { display:flex; gap:8px; }
+.order-card,.inventory-row { display:grid; grid-template-columns:1.2fr 1fr 1fr 180px; gap:12px; align-items:center; border-bottom:1px solid #eeeae2; padding:12px 4px; }
+.order-card > div { display:grid; gap:4px; }
+.order-card small,.inventory-row small { color:#777268; }
+.inventory-row { grid-template-columns:1fr 150px; }
+.inventory-row > div { display:grid; gap:4px; }
+.danger-small { margin:8px 8px 0 0; background:#9d2f2f!important; font-size:12px!important; }
+@media (max-width:900px) {
+  .admin-shell { grid-template-columns:74px 1fr; }
+  .brand { font-size:12px; }
+  .brand span { display:none; }
+  .sidebar nav button,.logout { text-align:center; padding:10px 4px; font-size:11px; }
+  .admin-header,.admin-content { padding-left:18px; padding-right:18px; }
+  .stats-grid { grid-template-columns:repeat(2,minmax(120px,1fr)); }
+  .manager-grid { grid-template-columns:1fr; }
+  .order-card { grid-template-columns:1fr 1fr; }
+}

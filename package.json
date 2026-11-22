@@ -7,10 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "validate:catalog": "node --experimental-strip-types scripts/validate-catalog.mjs",
+    "seed:supabase": "node --experimental-strip-types scripts/seed-supabase.mjs",
     "preview": "vite preview",
     "format": "oxfmt"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { products, productSlugAliases, type Product } from "./products";
+import { products as localProducts, productSlugAliases as localProductSlugAliases, type Product } from "./products";
+import { createCodOrder, fetchStorefrontCatalog } from "./services/storefront";
 
 type Page =
   | "home"
@@ -140,6 +141,8 @@ function Logo({ light = false }: { light?: boolean }) {
 
 let navigate = (_page: Page | string) => {};
 let openDrawer = (_page: string) => {};
+let products: Product[] = localProducts;
+let productSlugAliases: Record<string, string> = localProductSlugAliases;
 
 function loadStorage<T>(key: string, fallback: T): T {
   try {
@@ -1116,6 +1119,7 @@ function ProductDetail({
 type CartItem = Product & {
   selectedSize: string;
   selectedColor: string;
+  supabaseVariantId?: string;
 };
 
 const cartItemKey = (item: CartItem) => `${item.id}-${item.selectedSize}-${item.selectedColor}`;
@@ -1262,6 +1266,8 @@ function readLastOrder(): CheckoutOrder | null {
 
 function Checkout({ items, onComplete }: { items: CartItem[]; onComplete: (order: CheckoutOrder) => void }) {
   const total = items.reduce((sum, item) => sum + item.price, 0);
+  const [submitting, setSubmitting] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
   if (!items.length)
     return (
       <main className="checkout-page">
@@ -1279,29 +1285,91 @@ function Checkout({ items, onComplete }: { items: CartItem[]; onComplete: (order
       <span>CHECKOUT · CASH ON DELIVERY <Icon name="shield" size={16} /></span>
       </div>
       <div className="checkout-layout">
-        <form className="checkout-form" onSubmit={(event) => {
+        <form className="checkout-form" onSubmit={async (event) => {
           event.preventDefault();
+          if (submitting) return;
+          setSubmitting(true);
+          setCheckoutError("");
           const form = new FormData(event.currentTarget);
-          const order: CheckoutOrder = {
-            reference: `BMS-${Date.now().toString(36).toUpperCase()}`,
-            name: `${form.get("firstName")} ${form.get("lastName")}`.trim(),
-            email: String(form.get("email")),
-            phone: String(form.get("phone")),
-            address: String(form.get("address")),
-            city: String(form.get("city")),
-            region: String(form.get("region")),
-            postalCode: String(form.get("postalCode")),
-            country: String(form.get("country")),
-            items: [...items],
-            total,
-            createdAt: new Date().toISOString(),
-          };
           try {
+            const name = `${form.get("firstName")} ${form.get("lastName")}`.trim();
+            const email = String(form.get("email"));
+            const phone = String(form.get("phone"));
+            const address = String(form.get("address"));
+            const city = String(form.get("city"));
+            const region = String(form.get("region"));
+            const postalCode = String(form.get("postalCode"));
+            const country = String(form.get("country"));
+
+            let reference = `BMS-${Date.now().toString(36).toUpperCase()}`;
+            let serverTotal = total;
+
+            const supabaseItems = items
+              .filter((item) => item.supabaseId && item.supabaseVariantId)
+              .map((item) => ({
+                product_id: item.supabaseId as string,
+                variant_id: item.supabaseVariantId as string,
+                quantity: 1,
+              }));
+
+            if (items.length === supabaseItems.length && supabaseItems.length > 0) {
+              const quantities = new Map<string, number>();
+              for (const item of supabaseItems) {
+                const key = `${item.product_id}:${item.variant_id}`;
+                quantities.set(key, (quantities.get(key) || 0) + 1);
+              }
+              const consolidatedItems = [...quantities].map(([key, quantity]) => {
+                const [product_id, variant_id] = key.split(":");
+                return { product_id, variant_id, quantity };
+              });
+              const idempotencyKey =
+                sessionStorage.getItem("bms-order-idempotency") ||
+                crypto.randomUUID();
+              sessionStorage.setItem("bms-order-idempotency", idempotencyKey);
+              const result = await createCodOrder({
+                idempotencyKey,
+                customer: { email, phone, full_name: name },
+                address: {
+                  full_name: name,
+                  phone,
+                  line1: address,
+                  city,
+                  region,
+                  postal_code: postalCode,
+                  country,
+                },
+                items: consolidatedItems,
+              });
+              reference = result.reference;
+              serverTotal = result.total / 100;
+              sessionStorage.removeItem("bms-order-idempotency");
+            }
+
+            const order: CheckoutOrder = {
+              reference,
+              name,
+              email,
+              phone,
+              address,
+              city,
+              region,
+              postalCode,
+              country,
+              items: [...items],
+              total: serverTotal,
+              createdAt: new Date().toISOString(),
+            };
             const orders = JSON.parse(localStorage.getItem("bms-demo-orders") || "[]") as CheckoutOrder[];
             localStorage.setItem("bms-demo-orders", JSON.stringify([...orders, order]));
             localStorage.setItem("bms-last-order", JSON.stringify(order));
-          } catch { /* The confirmation remains available in memory for this visit. */ }
-          onComplete(order);
+            onComplete(order);
+          } catch (error) {
+            setCheckoutError(
+              error instanceof Error ? error.message : "We could not place the order. Please try again.",
+            );
+          } finally {
+            setSubmitting(false);
+          }
         }}>
           <button type="button" className="back" onClick={() => navigate("cart")}>← RETURN TO BAG</button>
           <h1>Checkout</h1>
@@ -1335,7 +1403,10 @@ function Checkout({ items, onComplete }: { items: CartItem[]; onComplete: (order
               <span><b>Cash on Delivery</b><small>Pay in cash when your order arrives.</small></span><b>COD</b>
             </label>
           </section>
-          <button className="checkout-btn">PLACE ORDER — ${total.toFixed(2)}</button>
+          {checkoutError && <p role="alert" className="checkout-error">{checkoutError}</p>}
+          <button className="checkout-btn" disabled={submitting}>
+            {submitting ? "PLACING ORDER…" : `PLACE ORDER — ${total.toFixed(2)}`}
+          </button>
         </form>
         <aside className="checkout-summary">
           <h2>Your Order <span>{items.length}</span></h2>
@@ -1839,6 +1910,9 @@ export default function App() {
   const searchTerm = params.get("q") || "";
   const productId = Number(params.get("id"));
   const productSlug = params.get("slug");
+  const [catalogProducts, setCatalogProducts] = useState<Product[]>(localProducts);
+  products = catalogProducts;
+  productSlugAliases = localProductSlugAliases;
   const resolvedSlug = productSlug ? productSlugAliases[productSlug] ?? productSlug : undefined;
   const matchedProduct = products.find((product) => product.id === productId || product.slug === resolvedSlug);
   const selectedProduct = matchedProduct || products[0];
@@ -1848,6 +1922,20 @@ export default function App() {
   const [toast, setToast] = useState("");
   const [sidePanel, setSidePanel] = useState<string | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    fetchStorefrontCatalog()
+      .then((catalog) => {
+        if (active && catalog?.length) setCatalogProducts(catalog);
+      })
+      .catch(() => {
+        // Preserve the existing local catalog until Supabase is configured and valid.
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!sidePanel) return;
@@ -1931,7 +2019,18 @@ export default function App() {
     color = p.colors[0],
   ) => {
     if (!p.sizes.includes(size) || !p.colors.includes(color)) return;
-    setCart((x) => [...x, { ...p, selectedSize: size, selectedColor: color }]);
+    const variant = p.variantOptions?.find(
+      (option) => option.size === size && option.color === color,
+    );
+    setCart((x) => [
+      ...x,
+      {
+        ...p,
+        selectedSize: size,
+        selectedColor: color,
+        supabaseVariantId: variant?.id,
+      },
+    ]);
     setToast(`${p.name} added to your bag`);
     setTimeout(() => setToast(""), 2600);
   };
