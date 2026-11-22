@@ -1407,6 +1407,18 @@ function ChatAssistant({ onClose }: { onClose: () => void }) {
   const [messages, setMessages] = useState<{ role: "user" | "assistant"; text: string }[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  function fallbackReply(question: string) {
+    const text = question.toLowerCase();
+    if (/^(hi|hello|hey|assalam|salam)\b/.test(text)) return "Hello! I’m the BM Solicitor store assistant. I can help with jackets, coats, sizing, shipping, returns, or order questions.";
+    if (text.includes("size") || text.includes("fit") || text.includes("measurement")) return "Please use the size guide in the store menu for exact measurements. It will help you choose the closest size and desired fit.";
+    if (text.includes("deliver") || text.includes("shipping") || text.includes("ship")) return "Worldwide delivery is available. Exact delivery time and shipping cost are confirmed during checkout.";
+    if (text.includes("return") || text.includes("exchange") || text.includes("refund")) return "For the current return and exchange terms, please open the Returns & Exchanges page under Client Services.";
+    if (text.includes("order") || text.includes("track") || text.includes("tracking")) return "Please use the Order Tracking page and enter the details from your confirmation. I cannot access or update orders directly.";
+    if (text.includes("payment") || text.includes("pay") || text.includes("cod")) return "Available payment options are shown during checkout. I cannot confirm or process a payment through this assistant.";
+    if (text.includes("jacket") || text.includes("coat") || text.includes("product") || text.includes("collection")) return "You can browse men’s jackets, women’s jackets, coats, new arrivals, and the full collection from the main menu.";
+    if (text.includes("contact") || text.includes("email") || text.includes("whatsapp")) return "You can contact the store at info@bmsolicitor.co or use the WhatsApp button on the website.";
+    return "I’m not able to confirm that detail reliably from the store information available here. Please contact the store at info@bmsolicitor.co for an accurate answer.";
+  }
   async function sendMessage(event: React.FormEvent) {
     event.preventDefault();
     const question = message.trim();
@@ -1414,7 +1426,7 @@ function ChatAssistant({ onClose }: { onClose: () => void }) {
     setMessages((current) => [...current, { role: "user", text: question }]);
     setMessage(""); setBusy(true); setError("");
     try {
-      const response = await fetch("/api/assistant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: [...messages, { role: "user", content: question }] }) });
+      const response = await fetch("/api/assistant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: [...messages, { role: "user", content: question }] }), signal: AbortSignal.timeout(12_000) });
       if (!response.headers.get("content-type")?.includes("application/json")) {
         throw new Error("The assistant service is not available right now. Please try again shortly.");
       }
@@ -1423,7 +1435,9 @@ function ChatAssistant({ onClose }: { onClose: () => void }) {
       const reply = data.reply;
       if (typeof reply !== "string") throw new Error("The assistant returned an invalid response. Please try again.");
       setMessages((current) => [...current, { role: "assistant", text: reply }]);
-    } catch (err) { setError(err instanceof Error ? err.message : "Assistant is temporarily unavailable."); }
+    } catch {
+      setMessages((current) => [...current, { role: "assistant", text: fallbackReply(question) }]);
+    }
     finally { setBusy(false); }
   }
   return <section className="assistant-window" aria-label="BM Solicitors Assistant">
